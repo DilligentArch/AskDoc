@@ -13,32 +13,38 @@ import Link from "next/link";
 
 const features = [
   {
+    id:1,
     name: "Store your PDF Documents",
     description: "Keep all your important PDF File files securly stored and easily accessible.",
     icon: GlobeIcon
 
   },
   {
+    id:2,
     name: "Blazing Fast Responses",
     description: "Get quick and accurate responses to your PDF-related queries.",
     icon: ZapIcon
   },
   {
+    id:3,
     name: "Chat Memorisation",
     description: "Our AI remembers your previous chats for better context.",
     icon: BrainCogIcon
   },
   {
+    id:4,
     name: "Interactive PDF Viewer",
     description: "View and interact with your PDF files seamlessly.",
     icon: EyeIcon
   },
   {
+    id:5,
     name: "Cloud Backup",
     description: "Never lose your documents with our secure cloud backup.",
     icon: ServerCogIcon
   },
   {
+    id:6,
     name: "Responsive Across Devices",
     description: "Access your documents and chat on any device, anywhere.",
     icon: MonitorSmartphoneIcon
@@ -47,6 +53,7 @@ const features = [
 
 
 export default function Home() {
+  // console.log(features);
   return (
     <main className="flex-1 overflow-scroll  p-2 lg:p-2 bg-gradient-to-bl from-white to-indigo-600">
       <div className="bg-white py-24 sm:py-32 rounded-md drop-shadow-xl">
@@ -97,7 +104,7 @@ export default function Home() {
           <dl className="mx-auto grid max-w-2xl grid-cols-1 gap-x-6 gap-y-10 text-base leading-7 text-gray-600 sm:grid-cols-2 lg:mx-0 lg:max-w-none lg:grid-cols-3 lg:gap-y-16">
             {
               features.map(feature => (
-                <div className="relative pl-9">
+                <div className="relative pl-9" key={feature.id}>
                   <dt className="inline font-semibold text-gray-900">
                     <feature.icon
                     aria-hidden="true"
