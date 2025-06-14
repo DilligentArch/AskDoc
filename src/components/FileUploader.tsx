@@ -1,12 +1,59 @@
 'use client';
+import { supabase } from '@/lib/supabaseClient';
 import { CircleArrowDown, RocketIcon } from 'lucide-react';
-import React, { useCallback } from 'react'
+import React, { useCallback, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 function FileUploader() {
+  const [uploading,setUploading]=useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [fileUrls, setFileUrls] = useState<string[]>([])
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    // Do something with the files
-  }, [])
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+  setErrorMsg(null)
+  setUploading(true)
+
+  try {
+    const newUrls: string[] = []
+
+    for (const file of acceptedFiles) {
+      const filePath = `${Date.now()}_${file.name}`
+
+      // 1️⃣ Upload
+      const { data, error: uploadError } = await supabase
+        .storage
+        .from('pdf-chat')          // ← same bucket name
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false,
+        })
+
+      if (uploadError) {
+        // wrap in a real Error for catch to pick up
+        throw new Error(uploadError.message)
+      }
+
+      // 2️⃣ Get public URL
+      const { publicURL, error: urlError } = supabase
+        .storage
+        .from('pdf-chat')          // ← same bucket
+        .getPublicUrl(data.path)
+
+      if (urlError) {
+        throw new Error(urlError.message)
+      }
+
+      newUrls.push(publicURL)
+    }
+
+    setFileUrls((urls) => [...urls, ...newUrls])
+  } catch (err: any) {
+    console.error('Upload error:', err)
+    setErrorMsg(err.message || 'An unknown error occurred')
+  } finally {
+    setUploading(false)
+  }
+}, [])
+
   const { getRootProps, getInputProps, isDragActive, isFocused, isDragAccept } = useDropzone({ onDrop })
 
   return (
