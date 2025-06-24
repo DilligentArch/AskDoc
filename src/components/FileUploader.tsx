@@ -6,13 +6,14 @@ import { useDropzone } from 'react-dropzone';
 import { v4 as uuidv4 } from 'uuid';
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
-
+import { generateEmbeddings } from "../actions/generateEmbeddings";
+import { startTransition } from "react";
 export default function FileUploader() {
   const { user, isSignedIn } = useUser();
   const router = useRouter();
 
-  const [status, setStatus] = useState<'idle'|'uploading'|'success'|'error'>('idle');
-  const [errorMsg, setErrorMsg] = useState<string|null>(null);
+  const [status, setStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [fileUrls, setFileUrls] = useState<string[]>([]);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
@@ -36,7 +37,7 @@ export default function FileUploader() {
 
         // 1️⃣ upload
         const { data: up, error: ue } = await supabase
-          .storage.from('pdf-chat').upload(path, file, { cacheControl:'3600', upsert:false });
+          .storage.from('pdf-chat').upload(path, file, { cacheControl: '3600', upsert: false });
         if (ue) throw new Error(ue.message);
 
         // 2️⃣ url
@@ -56,7 +57,9 @@ export default function FileUploader() {
             size: file.size,
           });
         if (de) throw new Error(de.message);
-
+        startTransition(() => {
+          generateEmbeddings(fileId);
+        });
         newUrls.push(publicUrl);
       }
 
@@ -73,7 +76,7 @@ export default function FileUploader() {
   }, [isSignedIn, user, router]);
 
   const { getRootProps, getInputProps, isDragActive, isFocused, isDragAccept } = useDropzone({
-    onDrop, maxFiles:1, accept:{ 'application/pdf':['.pdf'] }
+    onDrop, maxFiles: 1, accept: { 'application/pdf': ['.pdf'] }
   });
 
   return (
@@ -83,7 +86,7 @@ export default function FileUploader() {
         className={`
           relative p-10 border-2 border-dashed mt-10 w-[90%] border-indigo-600
           text-indigo-600 rounded-lg h-96 flex items-center justify-center
-          ${isFocused||isDragAccept ? 'bg-indigo-300' : 'bg-indigo-100'}
+          ${isFocused || isDragAccept ? 'bg-indigo-300' : 'bg-indigo-100'}
         `}
       >
         <input {...getInputProps()} />
