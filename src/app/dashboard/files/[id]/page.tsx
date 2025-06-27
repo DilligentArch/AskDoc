@@ -28,12 +28,12 @@ async function ChatToFilePage({
   return (
     <div className="grid lg:grid-cols-5 h-full  overflow-hidden">
       <div className="col-span-5 lg:col-span-2 overflow-y-auto">
-
-      </div>
-      <div className="col-span-5 lg:col-span-3 bg-gray-100 border-r-2 lg:border-indigo-600 lg:order-1 overflow-auto">
        <PdfView url={url}>
 
        </PdfView>
+      </div>
+      <div className="col-span-5 lg:col-span-3 bg-gray-100 border-r-2 lg:border-indigo-600 lg:order-1 overflow-auto">
+      
 
       </div>
 
