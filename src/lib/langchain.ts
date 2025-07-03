@@ -2,17 +2,19 @@ import { ChatOpenAI } from "@langchain/openai";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters"
 import { OpenAIEmbeddings } from "@langchain/openai";
-// import { createStuffDocumentionChain } from "@langchain/core/chains";
-// import { ChatPromptTemplate } from "@langchain/core/prompts";
-// import { createRetrievalChain } from "@langchain/core/chains";
-// import { createHistoryAwareRetriever } from "@langchain/chains/history_aware_retriever";
-// import { HumanMessage, AIMessage } from "@langchain/core/messages";
+import { ChatPromptTemplate } from "@langchain/core/prompts";
+import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
+import { createRetrievalChain }     from "langchain/chains/retrieval";
+import { createHistoryAwareRetriever }from "langchain/chains/history_aware_retriever";
+import { HumanMessage, AIMessage } from "@langchain/core/messages";
 import pineconeClient from "./pinecone"
 import { PineconeStore } from "@langchain/pinecone";
 import { Index, RecordMetadata } from "@pinecone-database/pinecone";
 import { auth } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabaseClient";
-
+import { adminDb } from "@/firebaseAdmin";
+// import Chat from "@/components/Chat";
+// import { generateEmbeddings } from "@/actions/generateEmbeddings";
 
 
 
@@ -21,6 +23,27 @@ const model = new ChatOpenAI({
   modelName: "gpt-4o",
 });
 export const indexName = "chat-with-pdf";
+
+async function fetchMessageFromDb(docId: string) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("User not found");
+
+  // Fetch chat history from the database
+  const chats=await adminDb
+  .collection("users")
+  .doc(userId)
+  .collection("files")
+  .doc(docId)
+  .collection("chat")
+  .orderBy("createdAt", "desc")
+  .get();
+
+  const chatHistory = chats.docs.map((doc) => {
+    return doc.data().role=== "human" ? new HumanMessage(doc.data().message) : new AIMessage(doc.data().message)
+  });
+  console.log("Fetched chat history:", chatHistory);
+  return chatHistory;
+}
 
 export async function generatDocs(docId:string){
    const { userId } = await auth();
@@ -107,6 +130,57 @@ else {
 
 
 }
+ const generateLangchainCompletion=async(docId:string,question:string)=>{
+  let pineconeVectorStore;
+  pineconeVectorStore=await generateEmbeddingsInPineconeVectorStore(docId);
+  //create a retreiver to  search through  the vector store
+  console.log("Creating retriever from Pinecone Vector Store");
+  const retriever = pineconeVectorStore.asRetriever()
+
+  //fetch the chat history from the database
+  const chatHistory = await fetchMessageFromDb(docId);
+  console.log("Creating history aware retriever");
+
+  const historyAwarePrompt=ChatPromptTemplate.fromMessages([
+    ...chatHistory,
+    ["user", "{input}"],
+    [
+      "user",
+      "Given the above conversation, generate a search query to look up in order to get information relevant to the conversation. ",
+    ],
+  ]);
+  const historyAwareRetriever = await createHistoryAwareRetriever({
+    llm: model,
+    retriever,
+    rephrasePrompt: historyAwarePrompt,
+  });
+  console.log("Creating retrieval chain");
+  const historyAwareRetrieverPrompt = ChatPromptTemplate.fromMessages([
+    ["system", 
+      "Answer the user's question based on the below context:\n\n{context}"],
+    ...chatHistory,
+    ["user", "{input}"],
+  ]);
+  //create a chain to combine the retriever and the model
+  const historyAwareCombineDocsChain = await createStuffDocumentsChain({
+    llm: model,
+    prompt: historyAwareRetrieverPrompt,
+  });
+  console.log("Creating retrieval chain");
+  const conversationalRetrievalChain = await createRetrievalChain({
+    retriever: historyAwareRetriever,
+    combineDocsChain: historyAwareCombineDocsChain,
+   
+  });
+  const reply = await conversationalRetrievalChain.invoke({
+    chat_history: chatHistory,
+    input: question,
+  });
+  console.log(reply.answer)
+  return reply.answer;
+}
+
+export { model, generateLangchainCompletion };
 
 
 

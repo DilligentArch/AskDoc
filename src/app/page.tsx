@@ -67,13 +67,13 @@ export default function Home() {
             </p>
             <p className="mt-5 text-lg leading-8 text-gray-600 ">
               Introducing{" "}
-              <span className="font-bold text-indigo-600">Chat with PDF</span>
+              <span className="font-bold text-indigo-600">AskDoc</span>
               <br></br>
 
               <br></br>
               Upload your document, and our chatbot will answer questions, summarize content, and help you with all your PDF needs.
               <span className="text-indigo-600"
-              > Chat with Your PDF</span>{" "}
+              > AskDoc</span>{" "}
               turns static documents into {" "}
               <span className="font-bold">dynamic Conversations</span>, enhance prductivity 10x fold effortlessly.
             </p>
@@ -87,7 +87,7 @@ export default function Home() {
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
             <Image
               alt="App Screenshot"
-              src="https://i.imgur.com/VciRSTI.jpg"
+              src="/chat_ui.png"
               width={2432}
               height={1442}
               className="mb-[-0%] rounded-xl shadow-2xl ring-1 ring-gray-900/10"

@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabaseClient";
 import { auth } from "@clerk/nextjs/server";
 import PdfView from "@/components/PdfView";
+import Chat from "@/components/Chat";
 
 async function ChatToFilePage({
     params:{id},
@@ -34,7 +35,7 @@ async function ChatToFilePage({
       </div>
       <div className="col-span-5 lg:col-span-3 bg-gray-100 border-r-2 lg:border-indigo-600 lg:order-1 overflow-auto">
       
-
+      <Chat id={id}></Chat>
       </div>
 
     </div>

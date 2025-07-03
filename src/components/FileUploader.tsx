@@ -50,6 +50,7 @@ export default function FileUploader() {
         const { error: de } = await supabase
           .from('files')
           .insert({
+            id: fileId,
             user_id: user.id,
             file_name: file.name,
             file_path: up.path,
