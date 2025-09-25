@@ -3,6 +3,10 @@
 A Next.js application that allows users to upload PDF files, securely store them in Supabase, and interact with them using a chat-based AI interface powered by LangChain, OpenAI, and Pinecone for embeddings. Chat history is stored in Firebase Firestore, enabling real-time conversations.
 
 ![alt text](image-1.png)
+## Demo
+
+[Watch Demo Video]([https://youtu.be/your-video-id](https://www.youtube.com/watch?v=EPZCsaTWPHA))
+
 
 ## Features
 
