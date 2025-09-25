@@ -5,7 +5,7 @@ A Next.js application that allows users to upload PDF files, securely store them
 ![alt text](image-1.png)
 ## Demo
 
-[Watch Demo Video]([https://youtu.be/your-video-id](https://www.youtube.com/watch?v=EPZCsaTWPHA))
+https://www.youtube.com/watch?v=EPZCsaTWPHA
 
 
 ## Features
